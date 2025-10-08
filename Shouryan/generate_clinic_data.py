@@ -3,12 +3,10 @@ import geopandas as gpd
 import pandas as pd
 import numpy as np
 
-# Load district codes from GeoJSON
 uttarakhand_map = gpd.read_file('UTTARAKHAND_DISTRICTS.geojson')
 district_codes = uttarakhand_map['dtcode11'].astype(int).tolist()
 NUM_DISTRICTS = len(district_codes)
 NUM_PATIENTS = 50000
-
 print("Generating synthetic clinical data for Tuberculosis in Uttarakhand...")
 
 np.random.seed(202)
@@ -26,25 +24,21 @@ clinical_data = {
 
 clinical_df = pd.DataFrame(clinical_data)
 
-# Compute a TB risk score based on clinical and behavioral factors
 risk_score = (
     0.05 * (clinical_df['Age'] - 40) +
-    -0.12 * (clinical_df['BMI'] - 21) +  # lower BMI increases risk
+    -0.12 * (clinical_df['BMI'] - 21) +  
     1.2 * clinical_df['Smoker'] +
     1.5 * clinical_df['HIV_Positive'] +
     0.9 * clinical_df['Family_History_TB'] +
     1.3 * clinical_df['Living_in_Crowded_Area'] +
     np.random.normal(0, 0.5, NUM_PATIENTS) - 2.0
 )
-
 def sigmoid(x):
     return 1 / (1 + np.exp(-x))
 
-# Apply sigmoid to get TB probability, then assign Has_TB
 tb_probability = sigmoid(risk_score)
 clinical_df['Has_TB'] = (np.random.rand(NUM_PATIENTS) < tb_probability).astype(int)
-
 clinical_df.to_csv('synthetic_tb_clinical_dataset.csv', index=False)
-
 print("\n--- Synthetic Tuberculosis Clinical Data Generation Complete ---")
 print(clinical_df.head())
+
